@@ -1,48 +1,41 @@
 import { FlatList, StatusBar, StyleSheet, Text, View, TouchableOpacity, Image, SafeAreaView } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { color } from '../assets/data/colors';
+import { f } from '../assets/data/fonts';
 
 const MainScreen = () => {
   const [notes, setNotes] = useState([]);
   const navigation = useNavigation();
 
-  // 🔹 Load notes from AsyncStorage
-  useEffect(() => {
-    const loadNotes = async () => {
-      const storedNotes = await AsyncStorage.getItem('notes');
-      if (storedNotes) {
-        setNotes(JSON.parse(storedNotes));
-      }
-    };
-    const unsubscribe = navigation.addListener('focus', loadNotes);
-    return unsubscribe;
-  }, [navigation]);
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={color.bg} />
-      <Text style={styles.headerText}>MEMOIRE</Text>
+      
 
-      {/* 🔹 Use marginTop to prevent overlap */}
       <FlatList
         data={notes}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingTop: 60, paddingBottom: 80 }} // Prevent overlap
+        contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.noteItem} 
-            onPress={() => navigation.navigate('Note', item)}>
-            <Text style={styles.noteTitle}>{item.title}</Text>
+          <TouchableOpacity style={styles.noteItem} >
+            <Text style={styles.noteTitle}>{item.title || 'Untitled'}</Text>
             <Text style={styles.noteContent} numberOfLines={2}>{item.content}</Text>
           </TouchableOpacity>
         )}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={<>
+        <View style={{backgroundColor:color.bg,padding:20,alignItems: 'center'}}>
+      <Text style={styles.headerText}>MEMOIRE</Text>
+      </View>
+        </>
+
+        }
+        extraData={notes}
       />
 
-      <TouchableOpacity 
-        onPress={() => navigation.navigate('Note', { id: null, title: 'New Note', content: '' })} 
-        style={styles.newButton}>
+      <TouchableOpacity onPress={()=>{navigation.navigate("Note", {title : 'New Note', content : ''})}} style={styles.newButton}>
         <Image style={styles.plusButton} source={require('../assets/images/plus.png')} />
       </TouchableOpacity>
     </SafeAreaView>
@@ -58,15 +51,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   headerText: {
-    fontFamily: 'black',
-    marginTop: 12,
-    alignSelf: 'center',
+    fontFamily: f.black,
     fontSize: 16,
     color: color.text2,
     letterSpacing: 4,
-    position: 'absolute',
-    top: 10,
-    zIndex: 10, // Ensure it stays on top
+
   },
   noteItem: {
     backgroundColor: '#363737',
